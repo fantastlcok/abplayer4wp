@@ -10,10 +10,39 @@
  */
 
 wp_register_style("abpwp-base-css", plugins_url('/assets/base.css', __FILE__));
+register_activation_hook(__FILE__, "abpwp_create_db");
+
 add_action('wp_enqueue_scripts', 'abpwp_add_styles');
+add_action('wp_enqueue_scripts', 'abpwp_add_scripts');
 
 function abpwp_add_styles(){
 	wp_enqueue_style('abpwp-base-css', plugins_url('/assets/base.css', __FILE__));
+}
+
+function abpwp_add_scripts(){
+	wp_enqueue_script('abpwp-js-commentcore', plugins_url('/assets/CommentCore.js', __FILE__), false );
+	wp_enqueue_script('abpwp-js-parsers', plugins_url('/assets/Parsers.js', __FILE__), false );
+	wp_enqueue_script('abpwp-js-requester', plugins_url('/assets/libxml.js', __FILE__), false );
+	wp_enqueue_script('abpwp-js-send', plugins_url('/assets/sendDispatcher.js', __FILE__), false );
+	wp_enqueue_script('abpwp-js-player', plugins_url('/assets/player.js', __FILE__), false );
+}
+
+function abpwp_create_db(){
+	global $wpdb;
+	$QUERY = "CREATE TABLE IF NOT EXISTS `" . $wpdb->prefix . "danmaku` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pool` text NOT NULL,
+  `text` text NOT NULL,
+  `type` int(11) NOT NULL,
+  `stime` int(11) NOT NULL,
+  `size` int(11) NOT NULL,
+  `color` int(11) NOT NULL,
+  `author` text NOT NULL,
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `notes` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+	$wpdb->query($QUERY);
 }
 
 add_shortcode('danmaku', 'register_abpwpshortcode');
@@ -58,12 +87,6 @@ function register_abpwpshortcode($atts){
 	if(isset($atts['ogv'])){
 		$formats['ogv'] = $atts['ogv'];
 	}
-	
-	$scripts = '<script src="' . plugins_url('/assets/CommentCore.js', __FILE__) . '" type="text/javascript"></script>';
-	$scripts.= '<script src="' . plugins_url('/assets/Parsers.js', __FILE__) . '" type="text/javascript"></script>';
-	$scripts.= '<script src="' . plugins_url('/assets/libxml.js', __FILE__) . '" type="text/javascript"></script>';
-	$scripts.= '<script src="' . plugins_url('/assets/player.js', __FILE__) . '" type="text/javascript"></script>';
-	$scripts.= '<script src="' . plugins_url('/assets/sendDispatcher.js', __FILE__) . '" type="text/javascript"></script>';
 	$body = '<div id="player-' . $dmid . '" tabindex="1"></div>
 			<video id="abp-video-' . $dmid . '" autobuffer="true" data-setup="{}">'. abpwp_video_to_source($formats) .'</video>';
 	$init = '<script type="text/javascript">
@@ -80,7 +103,7 @@ function register_abpwpshortcode($atts){
 				window.abpinst = inst;
 			});
 		</script>';
-	return $scripts . $body . $init;
+	return $body . $init;
 }
 
 add_action('wp_ajax_danmaku', 'abpwp_ajax_danmaku' );
@@ -107,10 +130,12 @@ function register_abpwpsettings() {
 }
 
 function abpwp_settings_page(){
+	global $wpdb;
 	@include_once(dirname(__FILE__) . "/options.php");
 }
 
 function abpwp_manage_page(){
+	global $wpdb;
 	@include_once(dirname(__FILE__) . "/manage.php");
 }
 ?>
