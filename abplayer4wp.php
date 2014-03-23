@@ -63,6 +63,7 @@ function register_abpwpshortcode($atts){
 	$scripts.= '<script src="' . plugins_url('/assets/Parsers.js', __FILE__) . '" type="text/javascript"></script>';
 	$scripts.= '<script src="' . plugins_url('/assets/libxml.js', __FILE__) . '" type="text/javascript"></script>';
 	$scripts.= '<script src="' . plugins_url('/assets/player.js', __FILE__) . '" type="text/javascript"></script>';
+	$scripts.= '<script src="' . plugins_url('/assets/sendDispatcher.js', __FILE__) . '" type="text/javascript"></script>';
 	$body = '<div id="player-' . $dmid . '" tabindex="1"></div>
 			<video id="abp-video-' . $dmid . '" autobuffer="true" data-setup="{}">'. abpwp_video_to_source($formats) .'</video>';
 	$init = '<script type="text/javascript">
@@ -73,13 +74,9 @@ function register_abpwpshortcode($atts){
 					"height":480
 				});
 				CommentLoader("//parsee/~jim/devel/ABPlayerHTML5/build/comment.xml", inst.cmManager);
+				inst.remote = new CommentSendContract();
 				inst.txtText.focus();
-				inst.txtText.addEventListener("keydown", function(e){
-					if(e && e.keyCode === 13){
-						if(/^!/.test(this.value)) return; //Leave the internal commands
-						inst.txtText.value = "";
-					}
-				});
+				bindABPlayerInstance(inst);
 				window.abpinst = inst;
 			});
 		</script>';
