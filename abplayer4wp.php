@@ -110,6 +110,7 @@ add_action('wp_ajax_danmaku', 'abpwp_ajax_danmaku' );
 add_action('wp_ajax_nopriv_danmaku', 'abpwp_ajax_danmaku' );
 
 function abpwp_ajax_danmaku(){
+	global $wpdb;
 	
 };
 
