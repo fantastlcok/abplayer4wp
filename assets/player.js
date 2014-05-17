@@ -88,7 +88,6 @@ var ABP = {
 			// Assuming we are injecting
 			var container = _("div", {
 				"className": "ABP-Unit",
-				"tabindex":"1",
 				"style":{
 					"width": params.width + "px",
 					"height": params.height + "px"

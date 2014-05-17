@@ -31,6 +31,28 @@ function CommentLoader(url,xcm,callback){
 		}
 	}
 }
+function WPCommentLoader(vid, cm){
+	if(!ajaxurl)
+		alert("Cannot fetch danmaku url");
+	var xmlhttp = null;
+	if (window.XMLHttpRequest){
+		xmlhttp=new XMLHttpRequest();
+	}
+	else{
+		xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xmlhttp.open("POST",ajaxurl,true);
+	var xcm = cm;
+	xmlhttp.onreadystatechange = function(){
+		if (xmlhttp.readyState==4 && xmlhttp.status==200){
+			xcm.load(JSON.parse(xmlhttp.responseText).timeline);
+			console.log(xcm);
+		}
+	}
+	xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	xmlhttp.send("action=danmaku&id=" + encodeURIComponent(vid));
+};
+
 function createCORSRequest(method, url){
     var xhr = new XMLHttpRequest();
     if ("withCredentials" in xhr){

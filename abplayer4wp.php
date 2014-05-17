@@ -20,11 +20,11 @@ function abpwp_add_styles(){
 }
 
 function abpwp_add_scripts(){
-	wp_enqueue_script('abpwp-js-commentcore', plugins_url('/assets/CommentCore.js', __FILE__), false );
-	wp_enqueue_script('abpwp-js-parsers', plugins_url('/assets/Parsers.js', __FILE__), false );
+	wp_enqueue_script('abpwp-js-commentcore', plugins_url('/assets/CommentCoreLibrary.js', __FILE__), false );
 	wp_enqueue_script('abpwp-js-requester', plugins_url('/assets/libxml.js', __FILE__), false );
 	wp_enqueue_script('abpwp-js-send', plugins_url('/assets/sendDispatcher.js', __FILE__), false );
 	wp_enqueue_script('abpwp-js-player', plugins_url('/assets/player.js', __FILE__), false );
+	wp_localize_script('abpwp-js-requester', 'ajaxurl', admin_url( 'admin-ajax.php') );
 }
 
 function abpwp_create_db(){
@@ -96,7 +96,8 @@ function register_abpwpshortcode($atts){
 					"width":640,
 					"height":480
 				});
-				CommentLoader("//parsee/~jim/devel/ABPlayerHTML5/build/comment.xml", inst.cmManager);
+				inst.state.allowRescale = true;
+				WPCommentLoader("' . $dmid .'", inst.cmManager);
 				inst.remote = new CommentSendContract();
 				inst.txtText.focus();
 				bindABPlayerInstance(inst);
@@ -111,7 +112,26 @@ add_action('wp_ajax_nopriv_danmaku', 'abpwp_ajax_danmaku' );
 
 function abpwp_ajax_danmaku(){
 	global $wpdb;
-	
+	$danmakus = Array();
+	$q = $wpdb->get_results("SELECT * FROM `" . $wpdb->prefix . "danmaku` WHERE `pool` = \"" . 
+		mysql_real_escape_string($_POST['id']) . "\" ORDER BY `id` DESC LIMIT 0," . 
+		((int) get_option("danmaku_pool_limit", "4000")) . ";");
+	foreach($q as $line){
+		$danmakus[] = Array(
+			"stime"=> (int)$line->stime,
+			"text"=> $line->text,
+			"mode"=> (int)$line->type,
+			"color"=> "#" . substr("000000".dechex((int)$line->color),-6),
+			"dbid"=> (int)$line->id,
+			"date"=> $line->date
+		);
+	}
+	echo json_encode(Array(
+		"v" => 1,
+		"len" => count($danmakus),
+		"timeline" => $danmakus,
+	));
+	die();
 };
 
 add_action('admin_menu', 'abpwp_create_menu');
